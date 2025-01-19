@@ -16,6 +16,11 @@ public final class AccountFactory {
      * @return A new Account instance
      */
     public static Account createAccount(final CommandInput input) {
-        return new Account(input);
+        return switch(input.getAccountType()) {
+            case "classic" -> new Account(input);
+            case "savings" -> new SavingsAccount(input);
+            case "business" -> new BusinessAccount(input);
+            default -> null;
+        };
     }
 }

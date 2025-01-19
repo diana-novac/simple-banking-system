@@ -42,6 +42,7 @@ public final class CreateOneTimeCard implements ActionCommand {
                                  final App app, final CommandInput command) {
         account.getCards().add(card);
         user.getAccountCardMap().put(card.getCardNumber(), account);
+        app.getDataContainer().getAccountCardMap().put(card.getCardNumber(), account);
         app.getDataContainer().getUserCardMap().put(card.getCardNumber(), user);
         app.getDataContainer().getCardMap().put(card.getCardNumber(), card);
 

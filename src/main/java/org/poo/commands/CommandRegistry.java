@@ -31,6 +31,7 @@ public final class CommandRegistry {
         outputCommandMap.put("printTransactions", new PrintTransactions());
         outputCommandMap.put("report", new Report());
         outputCommandMap.put("spendingsReport", new SpendingsReport());
+        outputCommandMap.put("businessReport", new BusinessReport());
 
         // Action commands
         actionCommandMap.put("addAccount", new AddAccount());
@@ -49,5 +50,9 @@ public final class CommandRegistry {
         actionCommandMap.put("withdrawSavings", new WithdrawSavings());
         actionCommandMap.put("upgradePlan", new UpgradePlan());
         actionCommandMap.put("cashWithdrawal", new CashWithdrawal());
+        actionCommandMap.put("acceptSplitPayment", new AcceptSplitPayment());
+        actionCommandMap.put("addNewBusinessAssociate", new AddNewBusinessAssociate());
+        actionCommandMap.put("changeSpendingLimit", new ChangeSpendingLimit());
+        actionCommandMap.put("changeDepositLimit", new ChangeDepositLimit());
     }
 }

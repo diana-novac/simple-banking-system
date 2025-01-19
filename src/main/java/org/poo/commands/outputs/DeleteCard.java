@@ -64,6 +64,7 @@ public final class DeleteCard implements ActionCommand {
         app.getDataContainer().getUserCardMap().remove(card.getCardNumber());
         app.getDataContainer().getCardMap().remove(card.getCardNumber());
         user.getAccountCardMap().remove(card.getCardNumber());
+        app.getDataContainer().getAccountCardMap().remove(card.getCardNumber());
     }
 
     // Logs the card deletion as a transaction

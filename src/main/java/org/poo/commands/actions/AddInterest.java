@@ -3,7 +3,6 @@ package org.poo.commands.actions;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.exceptions.AccountNotFoundException;
 import org.poo.exceptions.AccountTypeException;
-import org.poo.exceptions.UserNotFoundException;
 import org.poo.fileio.CommandInput;
 import org.poo.main.App;
 import org.poo.models.Account;
@@ -29,27 +28,17 @@ public final class AddInterest implements ActionCommand {
             Account account = app.getDataContainer().getAccountMap().get(command.getAccount());
             User user = app.getDataContainer().getUserAccountMap().get(command.getAccount());
 
-            double interest = getInterest(account);
-            account.setBalance(account.getBalance() + interest);
+            if (account == null) {
+                throw new AccountNotFoundException("Account not found");
+            }
+
+            double interest = account.getInterestRate() * account.getBalance();
+            account.addInterest();
+
             logTransaction(user, account, command, interest, "Interest rate income");
         } catch (AccountNotFoundException | AccountTypeException e) {
             CommandUtils.addErrorToOutput(app.getOutput(), command, e.getMessage());
         }
-    }
-
-    private static double getInterest(final Account account) {
-        if (account == null) {
-            throw new AccountNotFoundException("Account not found");
-        }
-
-        // Validate that the account is a savings account
-        if (!account.getType().equals("savings")) {
-            throw new AccountTypeException("This is not a savings account");
-        }
-
-        // Calculate and apply interest to the account balance
-        double interestRate = account.getInterestRate();
-        return account.getBalance() * interestRate;
     }
 
     private void logTransaction(final User user, final Account account,

@@ -43,6 +43,7 @@ public final class CreateCard implements ActionCommand {
         account.getCards().add(card);
         user.getAccountCardMap().put(card.getCardNumber(), account);
         app.getDataContainer().getUserCardMap().put(card.getCardNumber(), user);
+        app.getDataContainer().getAccountCardMap().put(card.getCardNumber(), account);
         app.getDataContainer().getCardMap().put(card.getCardNumber(), card);
 
         ObjectNode transaction = new TransactionBuilder()

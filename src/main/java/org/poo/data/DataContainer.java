@@ -15,6 +15,7 @@ import java.util.HashMap;
 public final class DataContainer {
     private final HashMap<String, User> emailMap = new HashMap<>();
     private final HashMap<String, Account> accountMap = new HashMap<>();
+    private final HashMap<String, Account> accountCardMap = new HashMap<>();
     private final HashMap<String, User> userCardMap = new HashMap<>();
     private final HashMap<String, User> userAccountMap = new HashMap<>();
     private final HashMap<String, Card> cardMap = new HashMap<>();

@@ -32,13 +32,8 @@ public final class ChangeInterestRate implements ActionCommand {
                 throw new AccountNotFoundException("Account not found");
             }
 
-            // Validate that the account is a savings account
-            if (!account.getType().equals("savings")) {
-                throw new AccountTypeException("This is not a savings account");
-            }
-
             // Update the account's interest rate
-            account.setInterestRate(command.getInterestRate());
+            account.changeInterestRate(command.getInterestRate());
 
             String description = String.format("Interest rate of the account changed to %.2f",
                     command.getInterestRate());

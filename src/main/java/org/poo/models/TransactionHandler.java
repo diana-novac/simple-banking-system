@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -64,5 +65,26 @@ public class TransactionHandler {
             }
         });
         return filteredTransactions;
+    }
+
+    public ArrayNode filterAndSortTransactionsByTimestamp(final int timestamp) {
+        ObjectMapper mapper = new ObjectMapper();
+        ArrayNode sortedTransactions = mapper.createArrayNode();
+        List<ObjectNode> filteredTransactions = new ArrayList<>();
+
+        // Filter transactions using forEach
+        transactions.forEach(transaction -> {
+            if (transaction.get("timestamp").asInt() <= timestamp) {
+                filteredTransactions.add((ObjectNode) transaction);
+            }
+        });
+
+        // Sort the filtered transactions by timestamp
+        filteredTransactions.sort(Comparator.comparingInt(t -> t.get("timestamp").asInt()));
+
+        // Add sorted transactions to the resulting ArrayNode
+        filteredTransactions.forEach(sortedTransactions::add);
+
+        return sortedTransactions;
     }
 }

@@ -173,6 +173,16 @@ public final class TransactionBuilder {
         return this;
     }
 
+    public TransactionBuilder addSplitType(final String type) {
+        transaction.put("splitPaymentType", type);
+        return this;
+    }
+
+    public TransactionBuilder addAmounts(final ArrayNode amounts) {
+        transaction.set("amountForUsers", amounts);
+        return this;
+    }
+
     /**
      * Finalizes the transaction
      *

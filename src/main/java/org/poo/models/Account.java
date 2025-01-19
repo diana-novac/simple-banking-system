@@ -4,12 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
+import org.poo.exceptions.AccountTypeException;
 import org.poo.fileio.CommandInput;
 import org.poo.main.App;
+import org.poo.models.roles.Role;
 import org.poo.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import static org.poo.utils.Constants.*;
 
@@ -18,7 +21,7 @@ import static org.poo.utils.Constants.*;
  * type, cards, and transactions
  */
 @Data
-public final class Account {
+public class Account {
     private String iban;
     private double balance;
     private String currency;
@@ -26,7 +29,6 @@ public final class Account {
     private double minBalance;
     private ArrayList<Card> cards;
     private String alias;
-    private double interestRate;
     private TransactionHandler transactionHandler;
     private double spendingAmount;
     private int numTransactions;
@@ -47,7 +49,6 @@ public final class Account {
         currency = input.getCurrency();
         type = input.getAccountType();
         cards = new ArrayList<>();
-        interestRate = input.getInterestRate();
 
         // Initialize the transaction handler
         transactionHandler = new TransactionHandler();
@@ -99,4 +100,30 @@ public final class Account {
         discounts.remove(category);
         System.out.println("Am eliminat discount-ul pt categoria " + category);
     }
+
+    public void addInterest() {
+        throw new AccountTypeException("This is not a savings account");
+    }
+    public void changeInterestRate(double newRate) {
+        throw new AccountTypeException("This is not a savings account");
+    }
+
+    public double getInterestRate() {
+        throw new AccountTypeException("This is not a savings account");
+    }
+
+    public void initializeLimits(final App app) { }
+    public void setRole(final String email, final Role role) { }
+    public Role getRole(final String email) {
+        return null;
+    }
+    public double getSpendingLimit() { return 0.0; }
+    public double getDepositLimit() { return 0.0; }
+    public void changeSpendingLimit(final double amount) { }
+    public void changeDepositLimit(final double amount) { }
+    public void addDepositByUser(final double amount, final String email) { }
+    public void addSpentByUser(final double amount, final String email) { }
+    public Map<String, Role> getRoles() { return null; }
+    public Map<String, Double> getSpentByUser() { return null; }
+    public Map<String, Double> getDepositedByUser() { return null; }
 }

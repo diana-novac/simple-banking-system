@@ -31,7 +31,7 @@ public final class PrintTransactions implements OutputCommand {
 
         // Filter the user's transactions based on the given timestamp
         ArrayNode filteredTransactions = user.getTransactionHandler()
-                .filterTransactionsByTimestamp(command.getTimestamp());
+                .filterAndSortTransactionsByTimestamp(command.getTimestamp());
         outputNode.set("output", filteredTransactions);
 
         outputNode.put("timestamp", command.getTimestamp());

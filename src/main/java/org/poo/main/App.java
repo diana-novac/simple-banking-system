@@ -12,8 +12,11 @@ import org.poo.fileio.CommandInput;
 import org.poo.fileio.ObjectInput;
 import org.poo.models.ExchangeRateGraph;
 import org.poo.models.User;
+import org.poo.split.SplitPaymentRequest;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * The App class serves as the main entry point for processing the commands.
@@ -29,6 +32,7 @@ public final class App {
     private CommandInput[] commands;
     private CommandRegistry commandRegistry;
     private ArrayNode output;
+    private Queue<SplitPaymentRequest> activeSplitPayments = new LinkedList<>();
 
     /**
      * Constructs an App instance with the provided input data
@@ -66,5 +70,21 @@ public final class App {
                         .get(command.getCommand()).execute(this, command);
             }
         }
+    }
+
+    public void addSplitPayment(SplitPaymentRequest req) {
+        activeSplitPayments.add(req);
+    }
+
+    public SplitPaymentRequest getNextRequest() {
+        return activeSplitPayments.peek();
+    }
+
+    public void removeSplitPayment() {
+        activeSplitPayments.poll();
+    }
+
+    public boolean hasActiveRequests() {
+        return !activeSplitPayments.isEmpty();
     }
 }

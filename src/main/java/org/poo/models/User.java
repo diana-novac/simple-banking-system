@@ -8,12 +8,15 @@ import org.poo.fileio.UserInput;
 import org.poo.plans.AccountPlan;
 import org.poo.plans.StandardPlan;
 import org.poo.plans.StudentPlan;
+import org.poo.split.SplitPaymentRequest;
 
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * Represents a user in the system, including their personal information,
@@ -28,6 +31,7 @@ public final class User {
     private String occupation;
     private AccountPlan accountPlan;
     private ArrayList<Account> accounts;
+    private Queue<SplitPaymentRequest> activePaymentRequests;
 
     // Maps account identifiers to accounts
     private HashMap<String, Account> accountMap;
@@ -50,6 +54,7 @@ public final class User {
         accounts = new ArrayList<>();
         accountMap = new HashMap<>();
         accountCardMap = new HashMap<>();
+        activePaymentRequests = new LinkedList<>();
 
         // Initialize the transaction handler for this user
         transactionHandler = new TransactionHandler();
@@ -88,5 +93,26 @@ public final class User {
 
         LocalDate currentDate = LocalDate.now();
         return Period.between(birthDateParsed, currentDate).getYears();
+    }
+
+    public void addSplitPayment(SplitPaymentRequest req) {
+        activePaymentRequests.add(req);
+    }
+
+    public SplitPaymentRequest getNextRequestOfType(String type) {
+        for (SplitPaymentRequest req : activePaymentRequests) {
+            if (req.getType().equalsIgnoreCase(type)) {
+                return req;
+            }
+        }
+        return null;
+    }
+
+    public void removeSplitPayment() {
+        activePaymentRequests.poll();
+    }
+
+    public boolean hasActivePayments() {
+        return !activePaymentRequests.isEmpty();
     }
 }

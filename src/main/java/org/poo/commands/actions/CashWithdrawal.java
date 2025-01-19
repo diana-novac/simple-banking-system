@@ -16,13 +16,13 @@ public final class CashWithdrawal implements ActionCommand {
         try {
             User user = app.getDataContainer().getEmailMap().get(command.getEmail());
             if (user == null) {
-                return;
+                throw new CardNotFoundException("Card not found");
             }
 
             Account account = user.getAccountCardMap().get(command.getCardNumber());
 
             if (account == null) {
-                return;
+                throw new CardNotFoundException("Card not found");
             }
 
             Card card = app.getDataContainer().getCardMap().get(command.getCardNumber());

@@ -41,18 +41,15 @@ public final class SendMoney implements ActionCommand {
                 return;
             }
 
-            // Check if the sender has sufficient funds
-            if (senderAccount.getBalance() < command.getAmount()) {
-                logInsufficientFunds(senderUser, senderAccount, command);
-                return;
-            }
-
             // Calculate the transferred amount in the receiver's currency
             String senderCurrency = senderAccount.getCurrency();
             String receiverCurrency = receiverAccount.getCurrency();
+
+
             double rate = app.getExchangeGraph().findExchangeRate(senderCurrency, receiverCurrency);
             double amountInRon = app.getExchangeGraph()
                     .findExchangeRate(senderCurrency, "RON") * command.getAmount();
+
             double transactionFee = senderUser.getAccountPlan()
                     .getTransactionFee(app, amountInRon) * command.getAmount();
             double amount = command.getAmount() * rate;
@@ -60,6 +57,12 @@ public final class SendMoney implements ActionCommand {
             System.out.println(senderUser.getFirstName() + " trimite " + command.getAmount() + senderAccount.getCurrency());
             System.out.println("Comisionul este de " + transactionFee + " pentru ca are rata " + senderUser.getAccountPlan().getTransactionFee(app, command.getAmount()));
             // Deduct from sender and add to receiver
+
+            if (senderAccount.getBalance() < command.getAmount() + transactionFee) {
+                logInsufficientFunds(senderUser, senderAccount, command);
+                return;
+            }
+
             senderAccount.setBalance(senderAccount.getBalance()
                     - (command.getAmount() + transactionFee));
             System.out.println("Acum " + senderUser.getEmail() + " are account balance " + senderAccount.getBalance());

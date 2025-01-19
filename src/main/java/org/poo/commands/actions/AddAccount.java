@@ -25,6 +25,11 @@ public final class AddAccount implements ActionCommand {
 
         // Create a new account using the AccountFactory and update the mappings
         Account newAccount = AccountFactory.createAccount(command);
+        if (newAccount == null) {
+            return;
+        }
+
+        newAccount.initializeLimits(app);
 
         user.getAccounts().add(newAccount);
         user.getAccountMap().put(newAccount.getIban(), newAccount);

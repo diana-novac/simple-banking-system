@@ -33,7 +33,8 @@ public final class PayOnline implements ActionCommand {
             }
 
             User user = app.getDataContainer().getEmailMap().get(command.getEmail());
-            Account account = user.getAccountCardMap().get(command.getCardNumber());
+            Account account = app.getDataContainer().getAccountCardMap()
+                    .get(command.getCardNumber());
 
             if (account == null) {
                 throw new CardNotFoundException("Card not found");
@@ -45,6 +46,17 @@ public final class PayOnline implements ActionCommand {
             }
 
             double amountToPay = calculateAmount(app, command, account);
+            if (account.getType().equals("business")) {
+                if (account.getRole(command.getEmail()) == null) {
+                    return;
+                }
+                if (!account.getRole(command.getEmail())
+                        .canPerformTransaction(amountToPay, "spending")) {
+                    return;
+                }
+                account.addSpentByUser(amountToPay, command.getEmail());
+            }
+
             processPayment(app, user, account, card, command, amountToPay);
         } catch (CardNotFoundException e) {
             CommandUtils.addErrorToOutput(app.getOutput(), command, e.getMessage());
@@ -124,7 +136,7 @@ public final class PayOnline implements ActionCommand {
                 .addCardHolder(user.getEmail())
                 .addAccount(account.getIban()).build();
 
-        updateCardMappings(app, user, card, oldCardNumber, newCardNumber);
+        updateCardMappings(app, user, card, account, oldCardNumber, newCardNumber);
 
         account.getTransactionHandler().addTransaction(destroyTransaction);
         account.getTransactionHandler().addTransaction(replaceTransaction);
@@ -134,13 +146,16 @@ public final class PayOnline implements ActionCommand {
 
     // Updates card mappings in the system to reflect the new card number
     private void updateCardMappings(final App app, final User user, final Card card,
-                                    final String oldCardNumber, final String newCardNumber) {
+                                    final Account account, final String oldCardNumber,
+                                    final String newCardNumber) {
         app.getDataContainer().getCardMap().remove(oldCardNumber);
         app.getDataContainer().getUserCardMap().remove(oldCardNumber);
+        app.getDataContainer().getAccountCardMap().remove(oldCardNumber);
 
         card.setCardNumber(newCardNumber);
         app.getDataContainer().getCardMap().put(newCardNumber, card);
         app.getDataContainer().getUserCardMap().put(newCardNumber, user);
+        app.getDataContainer().getAccountCardMap().put(newCardNumber, account);
     }
 
     // Logs a transaction for the user and account
