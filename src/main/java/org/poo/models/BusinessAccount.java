@@ -1,17 +1,24 @@
 package org.poo.models;
 
 import lombok.Data;
-import lombok.Getter;
 import org.poo.fileio.CommandInput;
 import org.poo.main.App;
 import org.poo.models.roles.Role;
 import org.poo.models.roles.RoleFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static org.poo.utils.Constants.INITIAL_DEPOSIT_LIMIT;
+import static org.poo.utils.Constants.INITIAL_SPENDING_LIMIT;
+
+@Data
 public final class BusinessAccount extends Account {
     private Map<String, Role> roles;
+    private Map<String, Double> commerciantTotals;
+    private Map<String, ArrayList<String>> commerciantUsers;
     private double spendingLimit;
     private double depositLimit;
     private Map<String, Double> spentByUser;
@@ -19,7 +26,9 @@ public final class BusinessAccount extends Account {
 
     public BusinessAccount(final CommandInput input) {
         super(input);
-        roles = new HashMap<>();
+        roles = new LinkedHashMap<>();
+        commerciantTotals = new HashMap<>();
+        commerciantUsers = new LinkedHashMap<>();
         spentByUser = new HashMap<>();
         depositedByUser = new HashMap<>();
 
@@ -28,8 +37,10 @@ public final class BusinessAccount extends Account {
 
     @Override
     public void initializeLimits(final App app) {
-        spendingLimit = app.getExchangeGraph().findExchangeRate("RON", getCurrency()) * 500;
-        depositLimit = app.getExchangeGraph().findExchangeRate("RON", getCurrency()) * 500;
+        spendingLimit = app.getExchangeGraph()
+                .findExchangeRate("RON", getCurrency()) * INITIAL_SPENDING_LIMIT;
+        depositLimit = app.getExchangeGraph()
+                .findExchangeRate("RON", getCurrency()) * INITIAL_DEPOSIT_LIMIT;
     }
 
     @Override
@@ -85,5 +96,14 @@ public final class BusinessAccount extends Account {
     @Override
     public Map<String, Double> getDepositedByUser() {
         return depositedByUser;
+    }
+
+    public void addCommerciantTransaction(final String commerciant, final String email,
+                                          final double amount) {
+        if (getRole(email).getType().equals("employee")) {
+            commerciantTotals.put(commerciant, commerciantTotals
+                    .getOrDefault(commerciant, 0.0) + amount);
+        }
+        commerciantUsers.computeIfAbsent(commerciant, k -> new ArrayList<>()).add(email);
     }
 }

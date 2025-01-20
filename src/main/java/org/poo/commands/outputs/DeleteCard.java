@@ -30,7 +30,7 @@ public final class DeleteCard implements ActionCommand {
             return;
         }
 
-        Account account = user.getAccountCardMap().get(command.getCardNumber());
+        Account account = app.getDataContainer().getAccountCardMap().get(command.getCardNumber());
         // Exit if the account associated with the card is not found
         if (account == null) {
             return;
@@ -42,6 +42,10 @@ public final class DeleteCard implements ActionCommand {
             return;
         }
 
+        if (account.getBalance() > 0) {
+            System.out.println("Vrem sa stergem cardul, dar inca avem fonduri in contul asociat");
+            return;
+        }
         // Delete the card and log the transaction
         deleteCard(app, user, account, card);
         logCardDeletion(user, account, command);

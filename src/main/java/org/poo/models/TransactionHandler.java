@@ -13,7 +13,7 @@ import java.util.List;
  * Handles transaction management: storing, adding, and filtering transactions
  */
 @Getter
-public class TransactionHandler {
+public final class TransactionHandler {
     private final ArrayNode transactions;
 
     public TransactionHandler() {
@@ -67,6 +67,13 @@ public class TransactionHandler {
         return filteredTransactions;
     }
 
+    /**
+     * Filters transactions that occurred up to a specified timestamp and sorts them
+     * chronologically
+     *
+     * @param timestamp The maximum timestamp for filtering transactions
+     * @return ArrayNode containing the filtered transactions
+     */
     public ArrayNode filterAndSortTransactionsByTimestamp(final int timestamp) {
         ObjectMapper mapper = new ObjectMapper();
         ArrayNode sortedTransactions = mapper.createArrayNode();

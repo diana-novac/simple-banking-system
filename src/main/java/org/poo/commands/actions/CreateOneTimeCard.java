@@ -33,7 +33,7 @@ public final class CreateOneTimeCard implements ActionCommand {
         Account account = user.getAccountMap().get(command.getAccount());
 
         // Create a new one-time-use card and add it to the system
-        Card newCard = CardFactory.createCard(true);
+        Card newCard = CardFactory.createCard(command.getEmail(), true);
         addCardToSystem(newCard, user, account, app, command);
     }
 

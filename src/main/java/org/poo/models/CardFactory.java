@@ -13,8 +13,8 @@ public final class CardFactory {
      * @param oneTime Indicates whether the card should be a one-time-use card
      * @return A new Card instance
      */
-    public static Card createCard(final boolean oneTime) {
-        Card card = new Card();
+    public static Card createCard(final String email, final boolean oneTime) {
+        Card card = new Card(email);
         card.setOneTime(oneTime);
         return card;
     }

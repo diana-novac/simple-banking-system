@@ -29,18 +29,23 @@ public final class AddFunds implements ActionCommand {
                 throw new AccountNotFoundException("Account not found");
             }
 
-            // Add the specified amount to the account balance
             if (account.getType().equals("business")) {
+                // Ensure the user has a valid role in the account
                 if (account.getRole(command.getEmail()) == null) {
                     return;
                 }
+
+                // Check if the user is not authorized to perform this transaction
                 if (!account.getRole(command.getEmail())
-                        .canPerformTransaction(command.getAmount(), "deposit")) {
+                        .canPerformTransaction(command.getAmount(), "deposit", account)) {
                     return;
                 }
+
+                // Log the deposit made by this user
                 account.addDepositByUser(command.getAmount(), command.getEmail());
             }
 
+            // Add the specified amount to the account balance
             account.setBalance(account.getBalance() + command.getAmount());
         } catch (AccountNotFoundException e) {
             // Log an error to the application's output if the account is not found

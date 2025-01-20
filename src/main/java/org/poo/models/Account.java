@@ -18,7 +18,7 @@ import static org.poo.utils.Constants.*;
 
 /**
  * Represents a bank account, including its properties such as IBAN, balance, currency,
- * type, cards, and transactions
+ * type, cards, and transactions.
  */
 @Data
 public class Account {
@@ -32,13 +32,14 @@ public class Account {
     private TransactionHandler transactionHandler;
     private double spendingAmount;
     private int numTransactions;
+    private int silverTransactions;
     private HashMap<String, Integer> requiredTransactions = new HashMap<>();
     private HashMap<String, Double> discounts = new HashMap<>();
 
     /**
-     * Constructs an Account instance based on the provided command input
+     * Constructs an Account instance based on the provided command input.
      *
-     * @param input CommandInput containing details to initialize the account
+     * @param input CommandInput containing details to initialize the account.
      */
     public Account(final CommandInput input) {
         iban = Utils.generateIBAN();
@@ -46,6 +47,7 @@ public class Account {
         minBalance = 0.0;
         spendingAmount = 0.0;
         numTransactions = 0;
+        silverTransactions = 0;
         currency = input.getCurrency();
         type = input.getAccountType();
         cards = new ArrayList<>();
@@ -63,9 +65,9 @@ public class Account {
     }
 
     /**
-     * Converts the account details and associated cards into a JSON representation
+     * Converts the account details and associated cards into a JSON representation.
      *
-     * @return ObjectNode containing the account's details in JSON format
+     * @return ObjectNode containing the account's details in JSON format.
      */
     public ObjectNode toJson() {
         ObjectMapper mapper = new ObjectMapper();
@@ -84,46 +86,128 @@ public class Account {
         return accountNode;
     }
 
+    /**
+     * Adds a specified amount to the total spending amount of the account
+     *
+     * @param amount The amount to add to the spending total
+     */
     public void addSpendingAmount(final double amount) {
         spendingAmount += amount;
     }
 
+    /**
+     * Adds a cashback amount to the account balance, converting the amount if necessary
+     *
+     * @param app    The application context
+     * @param amount The cashback amount in RON
+     */
     public void addCashback(final App app, final double amount) {
         double amountToAdd = amount * app.getExchangeGraph().findExchangeRate("RON", currency);
         balance += amountToAdd;
     }
 
-    public void addCashback(final double amount, final String category) {
-        balance += amount;
-        System.out.println("Am adaugat " + amount + " in cont");
+    /**
+     * Adds a cashback amount to the account balance and removes the discount for the category
+     *
+     * @param app      The application context
+     * @param amount   The cashback amount in RON
+     * @param category The category for which the cashback is applied
+     */
+    public void addCashback(final App app, final double amount, final String category) {
+        double amountToAdd = amount * app.getExchangeGraph().findExchangeRate("RON", currency);
+        balance += amountToAdd;
         requiredTransactions.remove(category);
         discounts.remove(category);
-        System.out.println("Am eliminat discount-ul pt categoria " + category);
     }
 
+    /**
+     * Throws an exception as this method is not supported for non-savings accounts
+     *
+     * @throws AccountTypeException This is not a savings account
+     */
     public void addInterest() {
         throw new AccountTypeException("This is not a savings account");
     }
-    public void changeInterestRate(double newRate) {
+
+    /**
+     * Throws an exception as this method is not supported for non-savings accounts
+     *
+     * @param newRate The new interest rate
+     * @throws AccountTypeException This is not a savings account
+     */
+    public void changeInterestRate(final double newRate) {
         throw new AccountTypeException("This is not a savings account");
     }
 
+    /**
+     * Throws an exception as this method is not supported for non-savings accounts
+     *
+     * @return The interest rate of the account
+     * @throws AccountTypeException This is not a savings account
+     */
     public double getInterestRate() {
         throw new AccountTypeException("This is not a savings account");
     }
 
-    public void initializeLimits(final App app) { }
-    public void setRole(final String email, final Role role) { }
+    /**
+     * Initializes spending and deposit limits for the account
+     * (To be overridden in business accounts)
+     *
+     * @param app The application context
+     */
+    public void initializeLimits(final App app) {
+    }
+
+    /**
+     * Sets a role for a user associated with this account
+     * (To be overridden in business accounts)
+     *
+     * @param email The email of the user.
+     * @param role  The role to be assigned to the user.
+     */
+    public void setRole(final String email, final Role role) {
+    }
+
+    /**
+     * Gets the role of a user associated with this account
+     * (To be overridden in business accounts)
+     *
+     * @param email The email of the user
+     * @return The role of the user, or null if not applicable
+     */
     public Role getRole(final String email) {
         return null;
     }
-    public double getSpendingLimit() { return 0.0; }
-    public double getDepositLimit() { return 0.0; }
-    public void changeSpendingLimit(final double amount) { }
-    public void changeDepositLimit(final double amount) { }
-    public void addDepositByUser(final double amount, final String email) { }
-    public void addSpentByUser(final double amount, final String email) { }
-    public Map<String, Role> getRoles() { return null; }
-    public Map<String, Double> getSpentByUser() { return null; }
-    public Map<String, Double> getDepositedByUser() { return null; }
+
+    public double getSpendingLimit() {
+        return 0.0;
+    }
+
+    public double getDepositLimit() {
+        return 0.0;
+    }
+
+    public void changeSpendingLimit(final double amount) {
+    }
+
+    public void changeDepositLimit(final double amount) {
+    }
+
+    public void addDepositByUser(final double amount, final String email) {
+    }
+
+    public void addSpentByUser(final double amount, final String email) {
+    }
+
+    public Map<String, Role> getRoles() {
+        return null;
+    }
+
+    public Map<String, Double> getSpentByUser() {
+        return null;
+    }
+
+    public Map<String, Double> getDepositedByUser() {
+        return null;
+    }
 }

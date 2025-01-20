@@ -5,7 +5,20 @@ import org.poo.fileio.CommerciantInput;
 
 import java.util.ArrayList;
 
+/**
+ * Utility class for initializing and loading commerciants
+ */
 public final class CommerciantInitializer {
+
+    /**
+     * Loads a list of commerciants from the provided input data and registers them in the
+     * DataContainer
+     *
+     * @param commerciantInputs An array of CommerciantInput objects containing
+     *                          data for commerciant initialization
+     * @param dataContainer     The DataContainer where commerciants will be registered
+     * @return A list of Commerciant objects created based on the input data.
+     */
     public ArrayList<Commerciant> loadCommerciants(final CommerciantInput[] commerciantInputs,
                                                    final DataContainer dataContainer) {
         ArrayList<Commerciant> commerciants = new ArrayList<>();

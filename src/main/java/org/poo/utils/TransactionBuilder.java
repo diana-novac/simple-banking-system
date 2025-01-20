@@ -163,26 +163,71 @@ public final class TransactionBuilder {
         return this;
     }
 
+    /**
+     * Adds the new plan type to the transaction
+     *
+     * @param newPlanType The type of the new plan being applied
+     * @return The current instance of the builder for method chaining
+     */
     public TransactionBuilder addNewPlanType(final String newPlanType) {
         transaction.put("newPlanType", newPlanType);
         return this;
     }
 
+    /**
+     * Adds an IBAN associated with the account involved in the transaction
+     *
+     * @param iban The account IBAN
+     * @return The current instance of the builder for method chaining
+     */
     public TransactionBuilder addAccountIBAN(final String iban) {
         transaction.put("accountIBAN", iban);
         return this;
     }
 
+    /**
+     * Adds the type of split payment to the transaction
+     *
+     * @param type The type of the split payment
+     * @return The current instance of the builder for method chaining
+     */
     public TransactionBuilder addSplitType(final String type) {
         transaction.put("splitPaymentType", type);
         return this;
     }
 
+    /**
+     * Adds the list of amounts for users in the split payment
+     *
+     * @param amounts A JSON array containing the amounts for users
+     * @return The current instance of the builder for method chaining
+     */
     public TransactionBuilder addAmounts(final ArrayNode amounts) {
         transaction.set("amountForUsers", amounts);
         return this;
     }
 
+    /**
+     * Adds the IBAN of a classic account involved in the transaction
+     *
+     * @param receiverIBAN The IBAN of the classic account
+     * @return The current instance of the builder for method chaining
+     */
+    public TransactionBuilder addClassicIBAN(final String receiverIBAN) {
+        transaction.put("classicAccountIBAN", receiverIBAN);
+        return this;
+    }
+
+    /**
+     * Adds the IBAN of a savings account involved in the transaction
+     *
+     * @param savingsIBAN The IBAN of the savings account
+     * @return The current instance of the builder for method chaining
+     */
+    public TransactionBuilder addSavingsIBAN(final String savingsIBAN) {
+        transaction.put("savingsAccountIBAN", savingsIBAN);
+        return this;
+    }
     /**
      * Finalizes the transaction
      *

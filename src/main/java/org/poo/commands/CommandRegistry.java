@@ -51,6 +51,7 @@ public final class CommandRegistry {
         actionCommandMap.put("upgradePlan", new UpgradePlan());
         actionCommandMap.put("cashWithdrawal", new CashWithdrawal());
         actionCommandMap.put("acceptSplitPayment", new AcceptSplitPayment());
+        actionCommandMap.put("rejectSplitPayment", new RejectSplitPayment());
         actionCommandMap.put("addNewBusinessAssociate", new AddNewBusinessAssociate());
         actionCommandMap.put("changeSpendingLimit", new ChangeSpendingLimit());
         actionCommandMap.put("changeDepositLimit", new ChangeDepositLimit());

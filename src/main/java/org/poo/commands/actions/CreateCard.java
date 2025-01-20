@@ -33,7 +33,7 @@ public final class CreateCard implements ActionCommand {
         Account account = user.getAccountMap().get(command.getAccount());
 
         // Create a new card and add it to the system
-        Card newCard = CardFactory.createCard(false);
+        Card newCard = CardFactory.createCard(command.getEmail(), false);
         addCardToSystem(newCard, user, account, app, command);
     }
 

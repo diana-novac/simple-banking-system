@@ -6,11 +6,15 @@ import org.poo.exceptions.CardNotFoundException;
 import org.poo.fileio.CommandInput;
 import org.poo.main.App;
 import org.poo.models.Account;
+import org.poo.models.BusinessAccount;
 import org.poo.models.Card;
 import org.poo.models.User;
+import org.poo.plans.AccountPlanFactory;
 import org.poo.utils.CommandUtils;
 import org.poo.utils.TransactionBuilder;
 import org.poo.utils.Utils;
+
+import static org.poo.utils.Constants.SILVER_TRANSACTION;
 
 /**
  * Command for processing online payments using a user's card
@@ -18,7 +22,7 @@ import org.poo.utils.Utils;
 public final class PayOnline implements ActionCommand {
 
     /**
-     * Executes the online payment action.
+     * Executes the online payment action
      * Validates the card and account, calculates the payment amount,
      * and processes the transaction
      *
@@ -28,6 +32,7 @@ public final class PayOnline implements ActionCommand {
     @Override
     public void execute(final App app, final CommandInput command) {
         try {
+            // Skip if the payment amount is zero
             if (command.getAmount() == 0) {
                 return;
             }
@@ -35,23 +40,21 @@ public final class PayOnline implements ActionCommand {
             User user = app.getDataContainer().getEmailMap().get(command.getEmail());
             Account account = app.getDataContainer().getAccountCardMap()
                     .get(command.getCardNumber());
-
-            if (account == null) {
-                throw new CardNotFoundException("Card not found");
-            }
-
             Card card = app.getDataContainer().getCardMap().get(command.getCardNumber());
-            if (card == null) {
+
+            if (account == null || card == null) {
                 throw new CardNotFoundException("Card not found");
             }
 
             double amountToPay = calculateAmount(app, command, account);
+
+            // Perform additional checks for business accounts
             if (account.getType().equals("business")) {
                 if (account.getRole(command.getEmail()) == null) {
-                    return;
+                    throw new CardNotFoundException("Card not found");
                 }
                 if (!account.getRole(command.getEmail())
-                        .canPerformTransaction(amountToPay, "spending")) {
+                        .canPerformTransaction(amountToPay, "spending", account)) {
                     return;
                 }
                 account.addSpentByUser(amountToPay, command.getEmail());
@@ -63,7 +66,7 @@ public final class PayOnline implements ActionCommand {
         }
     }
 
-    // Calculates the payment amount, converting currencies if necessary
+    // Calculates the payment amount by converting the currency
     private double calculateAmount(final App app, final CommandInput command,
                                    final Account account) {
         double rate = app.getExchangeGraph().findExchangeRate(command.getCurrency(),
@@ -71,53 +74,88 @@ public final class PayOnline implements ActionCommand {
         return command.getAmount() * rate;
     }
 
-    // Processes the payment, handles insufficient funds, frozen cards, and one-time cards
+    // Processes the payment by validating the card status, balance, and applying fees
     private void processPayment(final App app, final User user, final Account account,
                                 final Card card, final CommandInput command,
                                 final double amountToPay) {
+        // Check if the card is active
         if (!card.getStatus().equals("active")) {
             logTransaction(user, account, command, "The card is frozen", 0, null);
             return;
         }
 
+        // Check if the account has sufficient funds
         if (account.getBalance() < amountToPay) {
             logTransaction(user, account, command, "Insufficient funds", 0, null);
             return;
         }
-        System.out.println(user.getFirstName() + " are planul " + user
-                .getAccountPlan().getPlanName());
 
-        System.out.println("Va plati in " + account.getCurrency() + " suma de " + amountToPay);
-
+        // Calculate transaction fee
         double amountInRON = amountToPay * app.getExchangeGraph()
                 .findExchangeRate(account.getCurrency(), "RON");
-
-        System.out.println("In RON va plati " + amountInRON);
-
         double transactionFee = user.getAccountPlan()
                 .getTransactionFee(app, amountInRON);
-        System.out.println("Rata comisionului e " + transactionFee);
         transactionFee *= amountToPay;
 
         account.setBalance(account.getBalance() - (amountToPay + transactionFee));
 
-        System.out.println(user.getFirstName() + " plateste " + (amountToPay + transactionFee));
-        System.out.println(user.getFirstName() + " are acum balanta " + account.getBalance());
-
-        Commerciant commerciant = app.getDataContainer()
-                .getCommerciantMap().get(command.getCommerciant());
-
-        commerciant.getStrategy().applyCashback(app, user, account, commerciant.getType(),
-                amountInRON);
+        // Try to apply cashback
+        applyCashback(app, user, account, command.getCommerciant(), amountInRON);
 
         logTransaction(user, account, command, "Card payment", amountToPay,
                 command.getCommerciant());
+
+        // Add commerciant transaction details for business accounts
+        if (account.getType().equals("business")) {
+            BusinessAccount acc = (BusinessAccount) account;
+            acc.addCommerciantTransaction(command.getCommerciant(), command.getEmail(),
+                    amountToPay);
+        }
+
+        // Handle account plan upgrade
+        handlePlanUpgrade(app, user, account, amountInRON, command);
+
+        // Replace one-time-use card if applicable
         if (card.isOneTime()) {
             replaceOneTimeCardNumber(app, user, account, card, command);
         }
     }
 
-    // Replaces a one-time-use card with a new card number
+    // Applies cashback based on the commerciant's strategy
+    private void applyCashback(final App app, final User user, final Account account,
+                               final String commerciantName, final double amountInRON) {
+        Commerciant commerciant = app.getDataContainer()
+                .getCommerciantMap().get(commerciantName);
+
+        if (commerciant != null) {
+            commerciant.getStrategy().applyCashback(app, user, account,
+                    commerciant.getType(), amountInRON, commerciant);
+        }
+    }
+
+    // Handles automatic account plan upgrades based on the user's transactions
+    private void handlePlanUpgrade(final App app, final User user, final Account account,
+                                   final double amountInRON, final CommandInput command) {
+        if (user.getAccountPlan().getPlanName().equals("silver")) {
+            if (amountInRON >= SILVER_TRANSACTION) {
+                account.setSilverTransactions(account.getSilverTransactions() + 1);
+            }
+            if (user.getAccountPlan().automaticUpgrade(account.getSilverTransactions())) {
+                user.setAccountPlan(AccountPlanFactory.createPlan("gold"));
+
+                ObjectNode transaction = new TransactionBuilder()
+                        .addTimestamp(command.getTimestamp())
+                        .addDescription("Upgrade plan")
+                        .addAccountIBAN(account.getIban())
+                        .addNewPlanType("gold").build();
+
+                user.getTransactionHandler().addTransaction(transaction);
+                account.getTransactionHandler().addTransaction(transaction);
+            }
+        }
+    }
+
+    // Replaces a one-time-use card with a new card numbe
     private void replaceOneTimeCardNumber(final App app, final User user,
                                           final Account account, final Card card,
                                           final CommandInput command) {

@@ -12,14 +12,16 @@ import org.poo.utils.Utils;
 @Data
 public final class Card {
     private String cardNumber;
+    private String cardHolder;
     private String status;
     private boolean oneTime = false;
 
     /**
      * Constructs a Card instance with a generated card number and default status
      */
-    public Card() {
+    public Card(final String email) {
         cardNumber = Utils.generateCardNumber();
+        cardHolder = email;
         status = "active";
     }
 

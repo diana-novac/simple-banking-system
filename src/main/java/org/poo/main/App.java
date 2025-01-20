@@ -72,19 +72,7 @@ public final class App {
         }
     }
 
-    public void addSplitPayment(SplitPaymentRequest req) {
+    public void addSplitPayment(final SplitPaymentRequest req) {
         activeSplitPayments.add(req);
-    }
-
-    public SplitPaymentRequest getNextRequest() {
-        return activeSplitPayments.peek();
-    }
-
-    public void removeSplitPayment() {
-        activeSplitPayments.poll();
-    }
-
-    public boolean hasActiveRequests() {
-        return !activeSplitPayments.isEmpty();
     }
 }

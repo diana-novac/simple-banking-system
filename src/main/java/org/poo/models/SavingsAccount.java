@@ -4,7 +4,7 @@ import lombok.Getter;
 import org.poo.fileio.CommandInput;
 
 @Getter
-public class SavingsAccount extends Account {
+public final class SavingsAccount extends Account {
     private double interestRate;
 
     public SavingsAccount(final CommandInput input) {
@@ -19,7 +19,7 @@ public class SavingsAccount extends Account {
     }
 
     @Override
-    public void changeInterestRate(double newRate) {
+    public void changeInterestRate(final double newRate) {
         interestRate = newRate;
     }
 }

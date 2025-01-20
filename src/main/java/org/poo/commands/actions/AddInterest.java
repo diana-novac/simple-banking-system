@@ -32,6 +32,7 @@ public final class AddInterest implements ActionCommand {
                 throw new AccountNotFoundException("Account not found");
             }
 
+            // Calculate the interest based on the account balance and interest rate
             double interest = account.getInterestRate() * account.getBalance();
             account.addInterest();
 
