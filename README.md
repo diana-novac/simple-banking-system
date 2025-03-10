@@ -1,34 +1,100 @@
-# Project Assignment POO  - J. POO Morgan - Phase One
+# Project Assignment POO  - J. POO Morgan - Phase Two
+### Copyright Diana Novac - 321CA
 
-![](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2dibmZueTVmbGNoY2kxcDlkdHpsd3hvNDA5ZTRleHcwMzRxM2x0OSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/lJEGgG5ajs4zC/giphy.gif)
-
-#### Assignment Link: [https://ocw.cs.pub.ro/courses/poo-ca-cd/teme/2024/proiect-etapa2](https://ocw.cs.pub.ro/courses/poo-ca-cd/teme/2024/proiect-etapa2)
-
-## Skel Structure
-
+## Project Structure
 * src/
-    * checker/ - checker files
-    * fileio/ - contains classes used to read data from the json files
+    * commands/ - Contains classes that handle user commands
+        * actions/ - Implements ActionCommand interface for commands that modify
+          the global state
+        * outputs/ - Implements OutputCommand interface for commands that generate responses
+        * CommandRegistry.java - Central registry for all commands
+    * commerciants/ - Contains the commerciant class and implementations of the CashbackStrategy interface
+    * data/ - Manages application data and initialization
     * main/
-        * Main - the Main class runs the checker on your implementation. Add the entry point to your implementation in it. Run Main to test your implementation from the IDE or from command line.
-        * Test - run the main method from Test class with the name of the input file from the command line and the result will be written
-          to the out.txt file. Thus, you can compare this result with ref.
-* input/ - contains the tests in JSON format
-* ref/ - contains all reference output for the tests in JSON format
+        * App.java - Core application logic and flow controller
+    * models/ - Represents core entities in the system
+        * accounts/ - Contains different types of accounts: classic, savings, business
+        * roles/ - Contains implementations of the Role interface, like Employee, Manager, Owner
+    * plans/ - Contains implementations of the AccountPlan interface
+    * utils/ - Utility classes for common tasks
+    * exceptions/ - Custom exception classes
+## Design Patterns
 
-## Tests
+### 1. Factory Pattern
 
-Tests Basic 1 - 10: Infrastructure \
-Tests Functional 11 - 17: Advanced \
-Tests Flow 18 - 20: Large Input
+* **Used in**: `AccountFactory.java`, `CardFactory.java`, `RoleFactory.java`, `AccountPlanFactory.java`,
+                `StrategyFactory.java`
+* **Purpose**: The Factory Pattern allows the creation of objects like accounts, cards, user roles or cashback strategies.
+  This approach ensures scalability, making it easy to add new types of accounts, cards, roles, and strategies
+  without changing existing code.
 
-1. test01_user_updates - 2p
-2. test02_upgrade_plan - 2p
-3. test04_commisions - 2p
-4. test05_savings_update - 2p
-5. test06_cashback - 2p
-6. test07_simple_split_payment - 2p
-7. test08_advanced_split_payment - 2p
-8. test09_business_account_simple - 2p
-9. test10_business_account_limits - 2p
+### 2. Command Pattern
 
+* **Used in**: `commands/actions/`, `commands/outputs/`
+* **Purpose**: Each action or debugging command is represented as a separate class.
+  These commands are registered in `CommandRegistry`, which ensures the correct logic is executed
+  for each action. This pattern allows new commands to be added without modifying the core logic
+  of the application.
+
+### 3. Strategy Pattern
+* **Used in**: `commerciants`, `plans`, `roles`
+* **Purpose**: The Strategy Pattern is used to encapsulate algorithms and behaviors, allowing them to be  
+easily interchangeable without modifying the client code.
+
+#### **Implementations**
+
+1. **Cashback Strategy (`commerciants`)**
+    - **Implementation**:
+        - **Interface**: `CashbackStrategy` defines methods for applying cashback (`applyCashback`) and checking eligibility (`isEligible`).
+        - **Concrete Strategies**:
+            - `NumberOfTransactionsStrategy` — Cashback is based on the number of transactions made by the user.
+            - `SpendingThresholdStrategy` — Cashback is applied based on the total spending amount of the user.
+        - **Factory**: `StrategyFactory` creates the appropriate strategy based on the commerciant input.
+
+2. **Account Plans (`plans`)**
+    - **Context**: Different account plans offer various benefits, such as transaction fees and cashback rates.
+    - **Implementation**:
+        - **Interface**: `AccountPlan` defines behaviors like `getTransactionFee`, `automaticUpgrade`, and `getCashbackRate`.
+        - **Concrete Strategies**:
+            - `StandardPlan`
+            - `StudentPlan`
+            - `SilverPlan`
+            - `GoldPlan`
+        - **Factory**: `AccountPlanFactory` creates account plans based on user input.
+
+3. **Role-Based Access (`roles`)**
+    - **Context**: In business accounts, users have roles (`Role`) that define what actions they can perform.
+    - **Implementation**:
+        - **Interface**: `Role` specifies methods like `canSetLimits` and `canPerformTransaction`.
+        - **Concrete Strategies**:
+            - `Owner`
+            - `Manager`
+            - `Employee`
+        - **Factory**: `RoleFactory` assigns roles dynamically based on the given commands.
+
+### 4. Builder pattern
+
+* **Used in**: `TransactionBuilder.java`
+* **Purpose**: The Builder pattern simplifies the creation of complex transaction objects 
+through method chaining.
+
+## App Flow - Relationships between classes
+
+### Initialization
+
+* `App.java` initializes users, accounts, and commands.
+* `CommandRegistry` registers all available commands for quick access during execution.
+
+### Command Processing
+
+* Commands are received and processed through `CommandInput` objects.
+* Depending on whether the command modifies the system state or generates output,
+  it is delegated to the `ActionCommand` or `OutputCommand` maps in `CommandRegistry`.
+
+### Transaction Management
+
+* `TransactionHandler` handles the creation and logging of transactions for both users and accounts.
+* Utility classes like `TransactionBuilder` simplify the creation of complex transaction objects.
+## End of Execution
+
+* At the end of execution, the system outputs results for all commands.
